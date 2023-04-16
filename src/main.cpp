@@ -164,6 +164,9 @@ int main() {
     glEnable(GL_CULL_FACE);
     glCullFace(GL_FRONT);
     glFrontFace(GL_CW);
+    //blending
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // build and compile shaders
     // -------------------------
@@ -171,7 +174,7 @@ int main() {
     Shader skyboxShader("resources/shaders/skybox.vs", "resources/shaders/skybox.fs");
     Shader shaderBlur("resources/shaders/blur.vs", "resources/shaders/blur.fs");
     Shader shaderBloomFinal("resources/shaders/bloom_final.vs", "resources/shaders/bloom_final.fs");
-
+    Shader blendingShader("resources/shaders/main.vs", "resources/shaders/blending.fs");
     // load models
     //egypt
     Model egyptModel("resources/objects/egipto/egipto.obj");
@@ -426,20 +429,73 @@ int main() {
         modelEgypt = glm::rotate(modelEgypt,glm::radians(-90.0f), glm::vec3(1.0f ,0.0f, 0.0f));
         ourShader.setMat4("model", modelEgypt);
         egyptModel.Draw(ourShader);
+
+        //BLENDING
+        blendingShader.use();
+        view = programState->camera.GetViewMatrix();
+        blendingShader.setVec3("viewPosition", programState->camera.Position);
+        blendingShader.setFloat("material.shininess", 32.0f);
+        blendingShader.setMat4("projection", projection);
+        blendingShader.setMat4("view", view);
+
+        pointLight.ambient = glm::vec3(programState->pointLightAmbDiffSpec.x);
+        pointLight.diffuse = glm::vec3(programState->pointLightAmbDiffSpec.y);
+        pointLight.specular = glm::vec3(programState->pointLightAmbDiffSpec.z);
+
+        //pointlight 1
+        blendingShader.setVec3("pointLights[0].position", glm::vec3(0.0f,1.5f+sin(currentFrame),0.5f));
+        blendingShader.setVec3("pointLights[0].ambient", pointLight.ambient);
+        blendingShader.setVec3("pointLights[0].diffuse", pointLight.diffuse);
+        blendingShader.setVec3("pointLights[0].specular", pointLight.specular);
+        blendingShader.setFloat("pointLights[0].constant", pointLight.constant);
+        blendingShader.setFloat("pointLights[0].linear", pointLight.linear);
+        blendingShader.setFloat("pointLights[0].quadratic", pointLight.quadratic);
+        //pointlight 2
+        blendingShader.setVec3("pointLights[1].position", glm::vec3(-5.0f,-0.35f-0.5f*(sin(currentFrame)*0.5f+0.5f),-7.0f));
+        blendingShader.setVec3("pointLights[1].ambient", pointLight.ambient);
+        blendingShader.setVec3("pointLights[1].diffuse", pointLight.diffuse);
+        blendingShader.setVec3("pointLights[1].specular", pointLight.specular);
+        blendingShader.setFloat("pointLights[1].constant", pointLight.constant);
+        blendingShader.setFloat("pointLights[1].linear", pointLight.linear);
+        blendingShader.setFloat("pointLights[1].quadratic", pointLight.quadratic);
+        //pointlight 3
+        blendingShader.setVec3("pointLights[2].position", glm::vec3(5.15f,0.95f-0.5f*(sin(currentFrame)*0.5f+0.5f),10.15f));
+        blendingShader.setVec3("pointLights[2].ambient", pointLight.ambient);
+        blendingShader.setVec3("pointLights[2].diffuse", pointLight.diffuse);
+        blendingShader.setVec3("pointLights[2].specular", pointLight.specular);
+        blendingShader.setFloat("pointLights[2].constant", pointLight.constant);
+        blendingShader.setFloat("pointLights[2].linear", pointLight.linear);
+        blendingShader.setFloat("pointLights[2].quadratic", pointLight.quadratic);
+        //flashlight
+        if (flashlight) {
+            blendingShader.setVec3("spotLight.position", programState->camera.Position);
+            blendingShader.setVec3("spotLight.direction", programState->camera.Front);
+            blendingShader.setVec3("spotLight.ambient", 0.0f, 0.0f, 0.0f);
+            blendingShader.setVec3("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
+            blendingShader.setVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);
+            blendingShader.setFloat("spotLight.constant", 1.0f);
+            blendingShader.setFloat("spotLight.linear", 0.09);
+            blendingShader.setFloat("spotLight.quadratic", 0.032);
+            blendingShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
+            blendingShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
+        }else{
+            blendingShader.setVec3("spotLight.diffuse", 0.0f, 0.0f, 0.0f);
+            blendingShader.setVec3("spotLight.specular", 0.0f, 0.0f, 0.0f);
+        }
         //tomb
         glm::mat4 modelTomb = glm::mat4(1.0f);
         modelTomb = glm::translate(modelTomb,glm::vec3(-0.45f,-1.4f+sin(currentFrame),-0.25f));
         modelTomb = glm::scale(modelTomb, glm::vec3(1.5f));
-        ourShader.setMat4("model", modelTomb);
-        tombModel.Draw(ourShader);
+        blendingShader.setMat4("model", modelTomb);
+        tombModel.Draw(blendingShader);
         //mummy 1
         glm::mat4 modelMummy = glm::mat4(1.0f);
         modelMummy = glm::translate(modelMummy,glm::vec3(-4.85f,-0.35f-0.5f*(sin(currentFrame)*0.5f+0.5f),-8.45f));
         modelMummy = glm::scale(modelMummy, glm::vec3(0.124f));
         modelMummy = glm::rotate(modelMummy,glm::radians(-88.0f+90.0f*(sin(currentFrame)*0.5f+0.5f)), glm::vec3(1.0f ,0.0f, 0.0f));
         modelMummy = glm::rotate(modelMummy,glm::radians(90.0f), glm::vec3(0.0f ,0.0f, 1.0f));
-        ourShader.setMat4("model", modelMummy);
-        mummyModel.Draw(ourShader);
+        blendingShader.setMat4("model", modelMummy);
+        mummyModel.Draw(blendingShader);
 
         //mummy 2
         modelMummy = glm::mat4(1.0f);
@@ -447,8 +503,8 @@ int main() {
         modelMummy = glm::scale(modelMummy, glm::vec3(0.124f));
         modelMummy = glm::rotate(modelMummy,glm::radians(-88.0f-90.0f*(sin(currentFrame)*0.5f+0.5f)), glm::vec3(1.0f ,0.0f, 0.0f));
         modelMummy = glm::rotate(modelMummy,glm::radians(-90.0f), glm::vec3(0.0f ,0.0f, 1.0f));
-        ourShader.setMat4("model", modelMummy);
-        mummyModel.Draw(ourShader);
+        blendingShader.setMat4("model", modelMummy);
+        mummyModel.Draw(blendingShader);
 
         // blur bright fragments with two-pass Gaussian Blur
         // _____________________________________________________________________________________
