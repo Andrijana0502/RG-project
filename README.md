@@ -13,3 +13,8 @@ Prazan projekat sa pratećim bibliotekama koje koristimo na času.
 # Prezentacija
 https://www.youtube.com/watch?v=wj4bZ_4U7ok&ab_channel=AndrijanaIvkovic
 
+# Radila
+Andrijana Ivkovic 115/2019
+
+
+
