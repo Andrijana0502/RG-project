@@ -1,5 +1,6 @@
 # project_egypot
-Prazan projekat sa pratećim bibliotekama koje koristimo na času. 
+Koriscena baza https://github.com/matf-racunarska-grafika/project_base
+Projekat je ilustracija grobnice Starom Egiptu.
 
 # Uputstvo
 1. `git clone https://github.com/matf-racunarska-grafika/project_base.git`
